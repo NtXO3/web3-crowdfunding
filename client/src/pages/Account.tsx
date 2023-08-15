@@ -24,16 +24,16 @@ const Account: FunctionComponent = () => {
   return (
     <>
       <section id="info">
-        <h2 className="font-semibold text-3xl mb-10">My Account</h2>
+        <h2 className="font-semibold text-2xl mb-10">My Account</h2>
         <div className="flex items-center border-b border-gray-700 pb-10">
-          <div className="sm:w-24 aspect-square w-20 mr-4 flex items-center justify-center bg-slate-600 rounded-full">
-            <MetaMaskIcon className="sm:w-16 w-12" />
+          <div className="sm:w-20 aspect-square w-16 mr-4 flex items-center justify-center bg-slate-600 rounded-full">
+            <MetaMaskIcon className="sm:w-14 w-10" />
           </div>
           <div>
-            <span className="text-gray-400 mb-1 font-semibold block">
+            <span className="text-gray-400 mb-1 font-semibold text-sm block">
               Your Wallet Address:
             </span>
-            <p className="text-lg sm:text-xl uppercase">
+            <p className="text-lg sm:text-lg uppercase">
               {firstAndLast(address)}
             </p>
           </div>
@@ -41,7 +41,7 @@ const Account: FunctionComponent = () => {
       </section>
       <section>
         <div className="py-10">
-          <h2 className="font-semibold text-3xl mb-10">My Campaigns</h2>
+          <h2 className="font-semibold text-2xl mb-10">My Campaigns</h2>
           <DisplayCampaigns
             isLoading={isLoading}
             errorMessage={error?.message}

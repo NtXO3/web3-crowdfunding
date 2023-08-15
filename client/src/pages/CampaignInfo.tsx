@@ -86,7 +86,8 @@ const CampaignInfo: FunctionComponent = () => {
 
   const totalCampaignsFromUser = campaigns.filter(
     (campaign) =>
-      campaign.owner.toLowerCase() === currentCampaign.owner.toLowerCase()
+      campaign.owner.toLowerCase() === currentCampaign.owner.toLowerCase() &&
+      !campaign.deleted
   ).length;
 
   const onSubmit = async ({ amount }: CampaignInfoFormValues) => {
@@ -140,9 +141,12 @@ const CampaignInfo: FunctionComponent = () => {
           <InfoBlock label="Creator">
             <div className="flex">
               <UserIcon />
-              <div className="ml-4">
-                <p className="font-semibold">
+              <div className="ml-4 flex-1">
+                <p className="font-semibold hyphens-auto whitespace-normal sm:text-base text-sm hidden sm:block">
                   {ensName || currentCampaign?.owner} {isOwner && "(You)"}
+                </p>
+                <p className="sm:hidden font-semibold">
+                  {firstAndLast(currentCampaign?.owner)}
                 </p>
                 <span className="text-sm text-gray-400">
                   <strong className="text-gray-300">

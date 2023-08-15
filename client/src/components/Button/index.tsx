@@ -17,7 +17,7 @@ const Button: FunctionComponent<ButtonProps> = (props) => {
     className: classNameProp,
     variant = "primary",
   } = props;
-  const className = `${buttonStyles[variant]} disabled:opacity-70 disabled:cursor-not-allowed flex cursor-pointer ${classNameProp} items-center justify-center whitespace-nowrap transition h-12 px-6 sm:text-lg rounded-md font-medium`;
+  const className = `${buttonStyles[variant]} disabled:opacity-70 disabled:cursor-not-allowed flex cursor-pointer ${classNameProp} items-center justify-center whitespace-nowrap transition h-12 px-6 rounded-md font-medium`;
 
   const calculatedChildren = isLoading
     ? new Array(3)
