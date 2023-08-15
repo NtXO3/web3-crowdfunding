@@ -4,10 +4,22 @@ import { Link, useParams } from "react-router-dom";
 import { UserIcon } from "src/components";
 import { useCampaigns } from "src/hooks/useCampaigns";
 import { formatEther, parseEther } from "viem";
-import { mainnet, useAccount, useContractWrite, useEnsName } from "wagmi";
+import {
+  mainnet,
+  useAccount,
+  useBalance,
+  useContractWrite,
+  useEnsName,
+  useWaitForTransaction,
+} from "wagmi";
 import { FaEthereum } from "react-icons/fa";
 import { debounce } from "debounce";
-import { firstAndLast, formatAmount, routePaths } from "src/utils";
+import {
+  firstAndLast,
+  formatAmount,
+  formatAssetAmount,
+  routePaths,
+} from "src/utils";
 import { contractAbi } from "src/utils/abi";
 import { CONTRACT_ADDRESS } from "src/utils/web3";
 import { PayButton } from "src/components/PayButton";
@@ -56,18 +68,29 @@ const CampaignInfo: FunctionComponent = () => {
     register,
     watch,
     handleSubmit,
-    formState: { isValid, errors },
+    formState: { isValid },
     setValue,
   } = useForm<CampaignInfoFormValues>({ mode: "onChange" });
   const { address } = useAccount();
+  const { data: balanceData } = useBalance({ address });
 
   const amount = watch("amount");
-  const { writeAsync: fundCampaign, isLoading } = useContractWrite({
+  const {
+    data,
+    writeAsync: fundCampaign,
+    isLoading: isLoadingDonate,
+  } = useContractWrite({
     address: CONTRACT_ADDRESS,
     abi: contractAbi,
     functionName: "donateToCampaign",
-    value: amount && !Number.isNaN(amount) ? parseEther(amount) : BigInt(0),
-    args: [id && Number.isSafeInteger(id) ? BigInt(id) : BigInt(0)],
+    value:
+      amount && Boolean(amount.match(/^-?\d+(\.\d+)?$/))
+        ? parseEther(amount)
+        : BigInt(0),
+    args: [id && id.match(/^\d+$/) ? BigInt(id) : BigInt(0)],
+  });
+  const { isLoading: isLoadingTransaction } = useWaitForTransaction({
+    hash: data?.hash,
   });
   const currentCampaign = campaigns?.[Number(id)];
   const { data: ensName } = useEnsName({
@@ -75,6 +98,7 @@ const CampaignInfo: FunctionComponent = () => {
     chainId: mainnet.id,
   });
   const isOwner = currentCampaign?.owner === address;
+  const isLoading = isLoadingDonate || isLoadingTransaction;
 
   if (!currentCampaign) {
     return <>No Campaign Found</>;
@@ -103,12 +127,21 @@ const CampaignInfo: FunctionComponent = () => {
   const handleAmountChange = debounce(
     (event: ChangeEvent<HTMLInputElement>) => {
       const { value } = event.target;
+
+      if (Number.isNaN(value)) {
+        setValue("amount", "", { shouldValidate: true });
+        return;
+      }
+
       const formattedAmount = formatAmount(value, true);
 
       setValue("amount", formattedAmount, { shouldValidate: true });
     },
     800
   );
+
+  const isOverMax =
+    balanceData && Number(amount) > Number(balanceData.formatted);
 
   return (
     <>
@@ -222,13 +255,16 @@ const CampaignInfo: FunctionComponent = () => {
                       required: true,
                       validate: {
                         greaterThanZero: (value) => Number(value) > 0,
+                        notOverMax: (value) =>
+                          balanceData &&
+                          Number(value) <= Number(balanceData.formatted),
                       },
                       onChange: (e) => handleAmountChange(e),
                     })}
                   />
-                  {errors.amount && (
-                    <span className="text-red-500 block">
-                      {errors.amount.message}
+                  {isOverMax && (
+                    <span className="text-red-400 absolute text-sm right-2 top-1/2 -translate-y-1/2">
+                      Max: {formatAssetAmount(balanceData?.formatted)} ETH
                     </span>
                   )}
                 </div>

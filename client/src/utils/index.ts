@@ -47,5 +47,42 @@ const navigationLinks = [
   { title: "Smart Contract", href: externalRoutes.CONTRACT, Icon: BiCodeAlt },
 ] as const;
 
+function formatAssetAmount(amount?: string | number): string {
+  // Handle undefined
+  if (amount === undefined) return "0";
+
+  // Ensure the amount is a number
+  const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
+
+  // Check for NaN (in case the string couldn't be converted to a number)
+  if (isNaN(numAmount)) return "0";
+
+  const integerPart = Math.floor(numAmount);
+  const decimalPartStr = numAmount.toString().split(".")[1] || "";
+
+  // If it's an integer, return as is
+  if (numAmount === integerPart) {
+    return integerPart.toString();
+  }
+
+  // If the integer part has more than 1 digit, trim to 4 decimals
+  if (integerPart >= 10) {
+    return numAmount.toString().slice(0, integerPart.toString().length + 5);
+  }
+
+  // Find the first non-zero decimal and trim up to that many decimals + 3 more
+  let firstNonZeroDecimal = 0;
+  for (let i = 0; i < decimalPartStr.length; i++) {
+    if (decimalPartStr[i] !== "0") {
+      firstNonZeroDecimal = i;
+      break;
+    }
+  }
+
+  return numAmount
+    .toString()
+    .slice(0, integerPart.toString().length + firstNonZeroDecimal + 4);
+}
+
 export * from "./routes";
-export { firstAndLast, formatAmount, navigationLinks };
+export { firstAndLast, formatAmount, navigationLinks, formatAssetAmount };
