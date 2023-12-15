@@ -104,9 +104,8 @@ const CampaignInfo: FunctionComponent = () => {
     return <>No Campaign Found</>;
   }
 
-  const daysLeft = Math.floor(
-    (Number(currentCampaign.deadline) - Date.now()) / 1000 / 60 / 60 / 24
-  );
+  const timeLeft = Number(currentCampaign.deadline) - Date.now();
+  const daysLeft = Math.floor(timeLeft / 1000 / 60 / 60 / 24);
 
   const totalCampaignsFromUser = campaigns.filter(
     (campaign) =>
@@ -143,6 +142,8 @@ const CampaignInfo: FunctionComponent = () => {
   const isOverMax =
     balanceData && Number(amount) > Number(balanceData.formatted);
 
+  const isExpiredCampaign = timeLeft < 0;
+
   return (
     <>
       <Link
@@ -158,7 +159,7 @@ const CampaignInfo: FunctionComponent = () => {
             src={currentCampaign?.image}
           />
         </figure>
-        <DisplayValue value={daysLeft} label="Days Left" />
+        <DisplayValue value={Math.max(daysLeft, 0)} label="Days Left" />
         <DisplayValue
           value={formatEther(currentCampaign.amountCollected)}
           label={`Raised of ${formatEther(currentCampaign.target)} ETH`}
@@ -249,8 +250,9 @@ const CampaignInfo: FunctionComponent = () => {
                 <div className="relative w-full mb-6">
                   <FaEthereum className="absolute left-2 top-1/2 -translate-y-1/2 text-lg" />
                   <input
-                    className="w-full outline-none bg-transparent border-gray-700 h-12 text-lg pl-8 text-white border-2 rounded-md"
+                    className="w-full disabled:cursor-not-allowed outline-none bg-transparent border-gray-700 h-12 text-lg pl-8 text-white border-2 rounded-md"
                     placeholder="0"
+                    disabled={isExpiredCampaign}
                     {...register("amount", {
                       required: true,
                       validate: {
@@ -268,21 +270,28 @@ const CampaignInfo: FunctionComponent = () => {
                     </span>
                   )}
                 </div>
-                <div className="bg-gray-900 px-6 py-4 rounded-lg mb-6">
-                  <h4 className="font-semibold text-sm mb-2">
-                    Back It Because You Believe In It.
-                  </h4>
-                  <p className="font-light text-gray-400 text-sm">
-                    Support the project for no reward, just because it speaks to
-                    you.
-                  </p>
-                </div>
+                {isExpiredCampaign ? (
+                  <div className="bg-red-400/10 px-6 py-4 rounded-lg mb-6">
+                    <p className="text-red-500">This Campaign has expired</p>
+                  </div>
+                ) : (
+                  <div className="bg-gray-900 px-6 py-4 rounded-lg mb-6">
+                    <h4 className="font-semibold text-sm mb-2">
+                      Back It Because You Believe In It.
+                    </h4>
+                    <p className="font-light text-gray-400 text-sm">
+                      Support the project for no reward, just because it speaks
+                      to you.
+                    </p>
+                  </div>
+                )}
+
                 <PayButton
                   role="button"
                   type="submit"
                   variant="primary"
                   className="w-full"
-                  disabled={!isValid}
+                  disabled={!isValid || isExpiredCampaign}
                   isLoading={isLoading}
                 >
                   Fund Campaign

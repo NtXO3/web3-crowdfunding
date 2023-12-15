@@ -75,7 +75,7 @@ const CampaignCard: FunctionComponent<CampaignCardProps> = (props) => {
               Raised of {formatEther(campaign.target)} Eth
             </span>
             <span className="text-gray-300 sm:text-base text-sm">
-              <strong className="mb-2">{daysLeft}</strong>
+              <strong className="mb-2">{Math.max(daysLeft, 0)}</strong>
               <br />
               Days Left
             </span>
